@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Toolbox — Free & Unlimited</title>
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --accent: #2c5f7c;
+            --accent-hover: #1d4a63;
+            --text: #1a1a1a;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --drop-bg: #f0f4f8;
+            --drop-border: #b0c8d8;
+            --danger: #c0392b;
+            --success: #27ae60;
+            --radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Header ── */
+        header {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            padding: 18px 24px;
+            text-align: center;
+        }
+        header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+        header p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+
+        /* ── Container ── */
+        .container {
+            width: 100%;
+            max-width: 640px;
+            padding: 24px 16px;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            border: none;
+            background: transparent;
+            transition: all 0.15s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab:hover { color: var(--text); background: #f5f7fa; }
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: #f0f4f8;
+        }
+        .tab-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+
+        /* ── Tool Card ── */
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .card .subtitle {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        /* ── Drop Zone ── */
+        .dropzone {
+            border: 2px dashed var(--drop-border);
+            background: var(--drop-bg);
+            border-radius: var(--radius);
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .dropzone:hover { border-color: var(--accent); background: #e8f0f7; }
+        .dropzone.dragover { border-color: var(--accent); background: #dce8f2; }
+        .dropzone-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .dropzone p { font-size: 14px; color: var(--text); }
+        .dropzone .hint { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+        .dropzone input { display: none; }
+
+        /* ── File List ── */
+        .file-list {
+            margin-top: 14px;
+            padding: 0;
+            list-style: none;
+        }
+        .file-list li {
+            background: #f5f7fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-list .remove {
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 2px 6px;
+        }
+        .file-list .size { color: var(--text-light); font-size: 11px; margin-left: 8px; }
+
+        /* ── Buttons ── */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 13px;
+            margin-top: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn:hover { background: var(--accent-hover); }
+        .btn:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* ── Result ── */
+        .result {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: var(--radius);
+            text-align: center;
+            display: none;
+        }
+        .result.success { background: #e8f8ee; border: 1px solid var(--success); display: block; }
+        .result.error { background: #fdeaea; border: 1px solid var(--danger); display: block; }
+        .result.loading { background: #e8f0f8; border: 1px solid var(--accent); display: block; }
+        .result a { color: var(--accent); font-weight: 700; }
+
+        /* ── Extra input for split ── */
+        .extra-input {
+            margin-top: 10px;
+            display: none;
+        }
+        .extra-input.visible { display: block; }
+        .extra-input label { font-size: 13px; color: var(--text-light); display: block; margin-bottom: 4px; }
+        .extra-input input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+        }
+
+        /* ── Footer ── */
+        footer {
+            margin-top: auto;
+            padding: 20px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+
+        @media (max-width: 480px) {
+            .container { padding: 16px 10px; }
+            .card { padding: 20px 16px; }
+            .tabs { border-radius: 6px; }
+            .tab { font-size: 11px; padding: 10px 4px; }
+            .tab-icon { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📄 PDF Toolbox</h1>
+    <p>Free · Unlimited · No Watermark · Files auto-deleted after 10 min</p>
+</header>
+
+<div class="container">
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" data-tool="merge">
+            <span class="tab-icon">⊕</span> Merge
+        </button>
+        <button class="tab" data-tool="compress">
+            <span class="tab-icon">🗜</span> Compress
+        </button>
+        <button class="tab" data-tool="split">
+            <span class="tab-icon">✂</span> Split
+        </button>
+        <button class="tab" data-tool="convert">
+            <span class="tab-icon">⇄</span> PDF → Word
+        </button>
+    </div>
+
+    <!-- Tool Card -->
+    <div class="card" id="tool-card">
+        <h2 id="tool-title">Merge PDFs</h2>
+        <p class="subtitle" id="tool-subtitle">Combine multiple PDFs into one file — free & unlimited</p>
+
+        <div class="dropzone" id="dropzone">
+            <span class="dropzone-icon">📤</span>
+            <p>Drag & drop files here, or click to browse</p>
+            <p class="hint">Max 50MB per file · All files auto-deleted after 10 minutes</p>
+            <input type="file" id="file-input" accept=".pdf">
+        </div>
+
+        <ul class="file-list" id="file-list"></ul>
+
+        <div class="extra-input" id="extra-input">
+            <label for="page-range">Pages to extract (optional)</label>
+            <input type="text" id="page-range" placeholder="e.g. 1,3,5-8 (leave empty to split all)">
+        </div>
+
+        <button class="btn" id="process-btn" disabled>Process</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+</div>
+
+<footer>
+    <p>All files are automatically deleted 10 minutes after processing. We never store your documents.</p>
+    <p style="margin-top:4px"><a href="#">Privacy Policy</a> · <a href="#">Contact</a></p>
+</footer>
+
+<script>
+// ===== State =====
+let currentTool = 'merge';
+let selectedFiles = [];
+
+const toolConfig = {
+    merge: {
+        title: 'Merge PDFs',
+        subtitle: 'Combine multiple PDFs into one file — free & unlimited',
+        multiple: true,
+        endpoint: '/merge',
+        fieldName: 'files',
+        showExtra: false,
+    },
+    compress: {
+        title: 'Compress PDF',
+        subtitle: 'Reduce PDF file size while keeping quality',
+        multiple: false,
+        endpoint: '/compress',
+        fieldName: 'file',
+        showExtra: false,
+    },
+    split: {
+        title: 'Split PDF',
+        subtitle: 'Extract pages from a PDF — choose specific pages or split all',
+        multiple: false,
+        endpoint: '/split',
+        fieldName: 'file',
+        showExtra: true,
+    },
+    convert: {
+        title: 'PDF → Word',
+        subtitle: 'Convert your PDF to an editable Word document (.docx)',
+        multiple: false,
+        endpoint: '/convert',
+        fieldName: 'file',
+        showExtra: false,
+    },
+};
+
+// ===== DOM refs =====
+const $ = (sel) => document.querySelector(sel);
+const dropzone = $('#dropzone');
+const fileInput = $('#file-input');
+const fileList = $('#file-list');
+const processBtn = $('#process-btn');
+const resultDiv = $('#result');
+const extraInput = $('#extra-input');
+const toolTitle = $('#tool-title');
+const toolSubtitle = $('#tool-subtitle');
+
+// ===== Tab switching =====
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentTool = tab.dataset.tool;
+        resetUI();
+        const config = toolConfig[currentTool];
+        toolTitle.textContent = config.title;
+        toolSubtitle.textContent = config.subtitle;
+        fileInput.multiple = config.multiple;
+        extraInput.classList.toggle('visible', config.showExtra);
+    });
+});
+
+// ===== Reset =====
+function resetUI() {
+    selectedFiles = [];
+    fileList.innerHTML = '';
+    resultDiv.className = 'result';
+    resultDiv.style.display = 'none';
+    resultDiv.textContent = '';
+    processBtn.disabled = true;
+    fileInput.value = '';
+    if (extraInput) {
+        const pr = $('#page-range');
+        if (pr) pr.value = '';
+    }
+}
+
+// ===== File selection =====
+dropzone.addEventListener('click', () => fileInput.click());
+
+dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+});
+
+dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+});
+
+dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => {
+    handleFiles(fileInput.files);
+});
+
+function handleFiles(files) {
+    const config = toolConfig[currentTool];
+    if (!config.multiple) {
+        selectedFiles = Array.from(files).slice(0, 1);
+    } else {
+        selectedFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+    }
+    renderFileList();
+    processBtn.disabled = selectedFiles.length === 0;
+}
+
+function renderFileList() {
+    fileList.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+        const li = document.createElement('li');
+        const sizeMB = (f.size / 1024 / 1024).toFixed(1);
+        li.innerHTML = `
+            <span>📄 ${f.name}<span class="size">${sizeMB} MB</span></span>
+            <span class="remove" data-index="${i}">×</span>
+        `;
+        fileList.appendChild(li);
+    });
+    fileList.querySelectorAll('.remove').forEach(el => {
+        el.addEventListener('click', (e) => {
+            const idx = parseInt(el.dataset.index);
+            selectedFiles.splice(idx, 1);
+            renderFileList();
+            processBtn.disabled = selectedFiles.length === 0;
+        });
+    });
+}
+
+// ===== Process =====
+processBtn.addEventListener('click', async () => {
+    const config = toolConfig[currentTool];
+    resultDiv.className = 'result loading';
+    resultDiv.style.display = 'block';
+    resultDiv.textContent = 'Processing...';
+    processBtn.disabled = true;
+
+    const formData = new FormData();
+    if (config.multiple) {
+        selectedFiles.forEach(f => formData.append(config.fieldName, f));
+    } else {
+        formData.append(config.fieldName, selectedFiles[0]);
+    }
+
+    if (config.showExtra) {
+        const pages = $('#page-range').value.trim();
+        if (pages) formData.append('pages', pages);
+    }
+
+    try {
+        const resp = await fetch(config.endpoint, { method: 'POST', body: formData });
+        if (!resp.ok) {
+            const err = await resp.json().catch(() => ({}));
+            throw new Error(err.error || `HTTP ${resp.status}`);
+        }
+
+        const blob = await resp.blob();
+        const disposition = resp.headers.get('Content-Disposition') || '';
+        const filenameMatch = disposition.match(/filename="?(.+?)"?$/);
+        const filename = filenameMatch ? filenameMatch[1] : 'download';
+
+        // 触发下载
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        // 压缩页面额外显示缩减率
+        let extraMsg = '';
+        if (currentTool === 'compress') {
+            const reduction = resp.headers.get('X-Reduction');
+            if (reduction) extraMsg = ` · Reduced ${reduction}`;
+        }
+
+        resultDiv.className = 'result success';
+        resultDiv.innerHTML = `✅ Done! File downloaded automatically.${extraMsg}<br><small style="color:#888">Files will be deleted in 10 minutes.</small>`;
+    } catch (err) {
+        resultDiv.className = 'result error';
+        resultDiv.textContent = `❌ ${err.message}`;
+    }
+
+    processBtn.disabled = false;
+});
+</script>
+
+</body>
+</html>
