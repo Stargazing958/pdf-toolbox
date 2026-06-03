@@ -1,45 +1,55 @@
-# PDF Toolbox — Free & Unlimited
+# PDF Toolbox
 
-4 个 PDF 工具合一的 Web 应用。
+Free online PDF tools — merge, compress, split, and convert PDFs to Word. No signup, no watermark, no limits.
 
-## 功能
+🔗 **Live site:** [freepdftools.top](http://freepdftools.top)
 
-| 工具 | API | 说明 |
-|------|-----|------|
-| PDF 合并 | `/merge` | 多文件合并为一个 |
-| PDF 压缩 | `/compress` | 减小文件大小 |
-| PDF 拆分 | `/split` | 按页拆分或提取指定页面 |
-| PDF 转 Word | `/convert` | 转为可编辑 .docx |
+## Features
 
-## 快速启动
+| Tool | API | Description |
+|------|-----|-------------|
+| Merge PDFs | `/merge` | Combine multiple PDFs into one |
+| Compress PDF | `/compress` | Reduce file size (Ghostscript engine) |
+| Split PDF | `/split` | Extract pages by range or split all |
+| PDF to Word | `/convert` | Convert PDF to editable .docx |
+
+- ✅ 100% free, unlimited use
+- ✅ No signup required
+- ✅ No watermarks
+- ✅ Files auto-deleted after 10 minutes
+- ✅ 50MB upload limit
+
+## Tech Stack
+
+- **Backend:** Python 3.12 + Flask
+- **Compression:** Ghostscript
+- **PDF parsing:** PyPDF2, pdf2docx
+- **Server:** nginx + gunicorn
+- **Infrastructure:** Alibaba Cloud lightweight server (Silicon Valley)
+
+## Quick Start
 
 ```bash
-# 1. 安装依赖
+# Install dependencies
 pip install -r requirements.txt
 
-# 2. 启动
+# Run locally
 python app.py --port 5000
 
-# 3. 打开浏览器
+# Open browser
 open http://localhost:5000
 ```
 
-## 特性
-
-- 无限次免费
-- 无水印
-- 文件 10 分钟后自动删除
-- 50MB 上传上限
-- 无需注册登录
-
-## 部署
-
-支持 Railway.app / Render.com / Fly.io 一键部署：
+## Deployment
 
 ```bash
-# Railway 部署
-railway up
+# With gunicorn
+gunicorn app:app --bind 0.0.0.0:8000
 
-# 或者手动
-gunicorn app:app --bind 0.0.0.0:$PORT
+# Behind nginx (recommended)
+# Add client_max_body_size 100m; in nginx config
 ```
+
+## License
+
+MIT
