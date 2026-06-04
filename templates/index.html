@@ -185,6 +185,14 @@
             border-radius: var(--radius);
             font-size: 13px;
         }
+        .extra-input select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 13px;
+            background: white;
+        }
 
         /* ── Footer ── */
         footer {
@@ -228,6 +236,15 @@
         <button class="tab" data-tool="convert">
             <span class="tab-icon">⇄</span> PDF → Word
         </button>
+        <button class="tab" data-tool="rotate">
+            <span class="tab-icon">↻</span> Rotate
+        </button>
+        <button class="tab" data-tool="delete">
+            <span class="tab-icon">🗑</span> Delete
+        </button>
+        <button class="tab" data-tool="img2pdf">
+            <span class="tab-icon">🖼</span> Image → PDF
+        </button>
     </div>
 
     <!-- Tool Card -->
@@ -247,6 +264,20 @@
         <div class="extra-input" id="extra-input">
             <label for="page-range">Pages to extract (optional)</label>
             <input type="text" id="page-range" placeholder="e.g. 1,3,5-8 (leave empty to split all)">
+        </div>
+
+        <div class="extra-input" id="delete-input">
+            <label for="delete-range">Pages to delete</label>
+            <input type="text" id="delete-range" placeholder="e.g. 1,3,5-7">
+        </div>
+
+        <div class="extra-input" id="rotate-input">
+            <label for="rotate-angle">Rotation angle</label>
+            <select id="rotate-angle">
+                <option value="90">90° Clockwise</option>
+                <option value="180">180°</option>
+                <option value="270">270° Counter‑clockwise</option>
+            </select>
         </div>
 
         <button class="btn" id="process-btn" disabled>Process</button>
@@ -298,6 +329,34 @@ const toolConfig = {
         endpoint: '/convert',
         fieldName: 'file',
         showExtra: false,
+        accept: '.pdf',
+    },
+    rotate: {
+        title: 'Rotate PDF',
+        subtitle: 'Rotate all pages in a PDF by 90°, 180°, or 270°',
+        multiple: false,
+        endpoint: '/rotate',
+        fieldName: 'file',
+        showExtra: 'rotate',
+        accept: '.pdf',
+    },
+    delete: {
+        title: 'Delete Pages',
+        subtitle: 'Remove specific pages from a PDF',
+        multiple: false,
+        endpoint: '/delete',
+        fieldName: 'file',
+        showExtra: 'delete',
+        accept: '.pdf',
+    },
+    img2pdf: {
+        title: 'Image → PDF',
+        subtitle: 'Convert one or more images into a single PDF',
+        multiple: true,
+        endpoint: '/img2pdf',
+        fieldName: 'files',
+        showExtra: false,
+        accept: '.jpg,.jpeg,.png,.webp,.bmp',
     },
 };
 
@@ -323,7 +382,21 @@ document.querySelectorAll('.tab').forEach(tab => {
         toolTitle.textContent = config.title;
         toolSubtitle.textContent = config.subtitle;
         fileInput.multiple = config.multiple;
-        extraInput.classList.toggle('visible', config.showExtra);
+        fileInput.accept = config.accept || '.pdf';
+        // Hide all extra inputs first
+        extraInput.classList.remove('visible');
+        const deleteInput = document.getElementById('delete-input');
+        const rotateInput = document.getElementById('rotate-input');
+        if (deleteInput) deleteInput.classList.remove('visible');
+        if (rotateInput) rotateInput.classList.remove('visible');
+        // Show the right one
+        if (config.showExtra === 'delete' && deleteInput) {
+            deleteInput.classList.add('visible');
+        } else if (config.showExtra === 'rotate' && rotateInput) {
+            rotateInput.classList.add('visible');
+        } else if (config.showExtra === true) {
+            extraInput.classList.add('visible');
+        }
     });
 });
 
@@ -336,10 +409,12 @@ function resetUI() {
     resultDiv.textContent = '';
     processBtn.disabled = true;
     fileInput.value = '';
-    if (extraInput) {
-        const pr = $('#page-range');
-        if (pr) pr.value = '';
-    }
+    const pr = $('#page-range');
+    if (pr) pr.value = '';
+    const dr = $('#delete-range');
+    if (dr) dr.value = '';
+    const ra = $('#rotate-angle');
+    if (ra) ra.value = '90';
 }
 
 // ===== File selection =====
@@ -366,10 +441,20 @@ fileInput.addEventListener('change', () => {
 
 function handleFiles(files) {
     const config = toolConfig[currentTool];
-    if (!config.multiple) {
-        selectedFiles = Array.from(files).slice(0, 1);
+    let accepted = [];
+    if (config.accept) {
+        const exts = config.accept.split(',').map(e => e.trim().toLowerCase());
+        accepted = Array.from(files).filter(f => {
+            const name = f.name.toLowerCase();
+            return exts.some(e => name.endsWith(e));
+        });
     } else {
-        selectedFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+        accepted = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+    }
+    if (!config.multiple) {
+        selectedFiles = accepted.slice(0, 1);
+    } else {
+        selectedFiles = accepted;
     }
     renderFileList();
     processBtn.disabled = selectedFiles.length === 0;
@@ -411,7 +496,13 @@ processBtn.addEventListener('click', async () => {
         formData.append(config.fieldName, selectedFiles[0]);
     }
 
-    if (config.showExtra) {
+    if (config.showExtra === 'rotate') {
+        const angle = $('#rotate-angle').value;
+        formData.append('angle', angle);
+    } else if (config.showExtra === 'delete') {
+        const pages = $('#delete-range').value.trim();
+        if (pages) formData.append('pages', pages);
+    } else if (config.showExtra) {
         const pages = $('#page-range').value.trim();
         if (pages) formData.append('pages', pages);
     }
