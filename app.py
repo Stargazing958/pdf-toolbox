@@ -92,7 +92,7 @@ def compress_pdf():
     try:
         result = subprocess.run([
             "gs", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
-            "-dPDFSETTINGS=/ebook", "-dNOPAUSE", "-dQUIET", "-dBATCH",
+            "-dPDFSETTINGS=/screen", "-dNOPAUSE", "-dQUIET", "-dBATCH",
             f"-sOutputFile={out_path}", tmp
         ], capture_output=True, text=True, timeout=120)
         if result.returncode != 0:
