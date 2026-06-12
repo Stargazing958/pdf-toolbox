@@ -3,7 +3,7 @@ PDF Toolbox — Free & Unlimited
 Flask 后端：合并 / 压缩 / 拆分 / 转 Word
 """
 
-import os, time, uuid, zipfile, threading, shutil
+import os, time, uuid, zipfile, threading, shutil, subprocess
 from datetime import datetime
 from flask import Flask, request, send_file, jsonify, render_template
 from PyPDF2 import PdfReader, PdfWriter
@@ -90,21 +90,13 @@ def compress_pdf():
     out_path = os.path.join(OUTPUT_DIR, out_name)
 
     try:
-        reader = PdfReader(tmp)
-        writer = PdfWriter()
-
-        for page in reader.pages:
-            writer.add_page(page)
-
-        # 去掉元数据减小体积
-        writer.add_metadata({
-            "/Producer": "PDF Toolbox",
-            "/Creator": "",
-        })
-
-        with open(out_path, "wb") as out:
-            writer.write(out)
-
+        result = subprocess.run([
+            "gs", "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.4",
+            "-dPDFSETTINGS=/ebook", "-dNOPAUSE", "-dQUIET", "-dBATCH",
+            f"-sOutputFile={out_path}", tmp
+        ], capture_output=True, text=True, timeout=120)
+        if result.returncode != 0:
+            raise RuntimeError(f"Ghostscript failed: {result.stderr}")
     except Exception:
         shutil.copy2(tmp, out_path)
 
